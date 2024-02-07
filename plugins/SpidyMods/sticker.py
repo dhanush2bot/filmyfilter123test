@@ -1,12 +1,17 @@
-#Made
-#by
-#Don_Sflix
-
 from pyrogram import Client, filters
 
 @Client.on_message(filters.command(["stickerid"]))
 async def stickerid(bot, message):   
-    if message.reply_to_message.sticker:
-       await message.reply(f"**Sticker ID is**  \n `{message.reply_to_message.sticker.file_id}` \n \n ** Unique ID is ** \n\n`{message.reply_to_message.sticker.file_unique_id}`", quote=True)
-    else: 
-       await message.reply("<b>Oops !! Not a sticker file</b>")
+    if message.reply_to_message and message.reply_to_message.sticker:
+        sticker = message.reply_to_message.sticker
+        await message.reply(
+            f"**Sticker ID:** `{sticker.file_id}`\n"
+            f"**Unique ID:** `{sticker.file_unique_id}`\n"
+            f"**Dimensions:** {sticker.width}x{sticker.height}\n"
+            f"**File Size:** {sticker.file_size} bytes",
+            quote=True
+        )
+    elif message.reply_to_message:
+        await message.reply("<b>Oops! The replied message is not a sticker.</b>")
+    else:
+        await message.reply("<b>Please reply to a sticker to get its ID.</b>")
