@@ -5,9 +5,9 @@ async def stickerid(bot, message):
     if message.reply_to_message and message.reply_to_message.sticker:
         sticker = message.reply_to_message.sticker
         await message.reply(
-            f"**Sticker ID:** `{sticker.file_id}`\n"
-            f"**Unique ID:** `{sticker.file_unique_id}`\n"
-            f"**Dimensions:** {sticker.width}x{sticker.height}\n"
+            f"**Sticker ID:** `{sticker.file_id}`\n\n"
+            f"**Unique ID:** `{sticker.file_unique_id}`\n\n"
+            f"**Dimensions:** {sticker.width}x{sticker.height}\n\n"
             f"**File Size:** {sticker.file_size} bytes",
             quote=True
         )
