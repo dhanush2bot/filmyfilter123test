@@ -1,87 +1,36 @@
 from countryinfo import CountryInfo
 from pyrogram import filters, Client 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-import requests
-from pygoogle import pygoogle
-
-def get_country_info_from_google(country_name):
-    query = f"{country_name} wikipedia"
-    g = pygoogle(query)
-    g.pages = 1
-    search_results = g.get_urls()
-    if search_results:
-        # Assuming the first search result is the Wikipedia page
-        wikipedia_url = search_results[0]
-        # You can use this URL to fetch additional information if needed
-        return wikipedia_url
-    else:
-        return None
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from Script import script
 
 @Client.on_message(filters.command(["country"]))
 async def country_info(bot, update):
-    country_name = update.text.split(" ", 1)[1]
-    country_info = CountryInfo(country_name)
-    
-    # Use the Wikipedia API to fetch a summary of the country
-    wikipedia_url = get_country_info_from_google(country_name)
-    if wikipedia_url:
-        wiki_summary = f"More information: {wikipedia_url}"
-    else:
-        wiki_summary = "Wikipedia information not found"
-    
-    # Additional information
-    languages = country_info.languages()
-    flag_url = f"https://www.countryflags.io/{country_info.iso_alpha2()}/flat/64.png"
-    map_url = f"https://www.google.com/maps/place/{country_info.capital()}"
-    
-    # Fetch currency exchange rates using an API
-    currency_api_url = f"https://api.currencylayer.com/live?access_key=YOUR_ACCESS_KEY&source=USD&currencies={country_info.currency_iso()}"
-    response = requests.get(currency_api_url)
-    exchange_rates = response.json()['quotes']
-    country_currency = country_info.currency()
-    exchange_rate = exchange_rates[f"USD{country_currency}"]
-    
-    # Fetch COVID-19 statistics using an API
-    covid_api_url = f"https://disease.sh/v3/covid-19/countries/{country_name}"
-    response = requests.get(covid_api_url)
-    covid_data = response.json()
-    total_cases = covid_data['cases']
-    total_deaths = covid_data['deaths']
-    total_vaccinations = covid_data['vaccinations']
-    
-    # Construct the information message
+    country = update.text.split(" ", 1)[1]
+    country = CountryInfo(country)
     info = f"""𝖢𝗈𝗎𝗇𝗍𝗋𝗒 𝖨𝗇𝖿𝗈𝗋𝗆𝖺𝗍𝗂𝗈𝗇
-𝖭𝖺𝗆𝖾 : {country_info.name()}
-𝖭𝖺𝗍𝗂𝗏𝖾 𝖭𝖺𝗆𝖾 : {country_info.native_name()}
-𝖢𝖺𝗉𝗂𝗍𝖺𝗅 : {country_info.capital()}
-Population : <code>{country_info.population()}</code>
-𝖱𝖾𝗀𝗂𝗈𝗇 : {country_info.region()}
-𝖲𝗎𝖻 𝖱𝖾𝗀𝗂𝗈𝗇 : {country_info.subregion()}
-𝖳𝗈𝗉 𝖫𝖾𝗏𝖾𝗅 𝖣𝗈𝗆𝖺𝗂𝗇𝗌 : {country_info.tld()}
-𝖢𝖺𝗅𝗅𝗂𝗇𝗀 𝖢𝗈𝖽𝖾𝗌 : {country_info.calling_codes()}
-𝖢𝗎𝗋𝗋𝖾𝗇𝖼𝗂𝖾𝗌 : {country_info.currencies()}
-𝖱𝖾𝗌𝗂𝖉𝖾𝗇𝖼𝖾 : {country_info.demonym()}
-𝖳𝗂𝗆𝖾𝗓𝗈𝗇𝖾 : <code>{country_info.timezones()}</code>
-Official Language(s): {', '.join(languages)}
-Wikipedia Summary: {wiki_summary}
-Currency Exchange Rate (1 USD = {exchange_rate} {country_currency})
-COVID-19 Statistics:
-- Total Cases: {total_cases}
-- Total Deaths: {total_deaths}
-- Total Vaccinations: {total_vaccinations}
+𝖭𝖺𝗆𝖾 : {country.name()}
+𝖭𝖺𝗍𝗂𝗏𝖾 𝖭𝖺𝗆𝖾 : {country.native_name()}
+𝖢𝖺𝗉𝗂𝗍𝖺𝗅 : {country.capital()}
+Population : <code>{country.population()}</code>
+𝖱𝖾𝗀𝗂𝗈𝗇 : {country.region()}
+𝖲𝗎𝖻 𝖱𝖾𝗀𝗂𝗈𝗇 : {country.subregion()}
+𝖳𝗈𝗉 𝖫𝖾𝗏𝖾𝗅 𝖣𝗈𝗆𝖺𝗂𝗇𝗌 : {country.tld()}
+𝖢𝖺𝗅𝗅𝗂𝗇𝗀 𝖢𝗈𝖽𝖾𝗌 : {country.calling_codes()}
+𝖢𝗎𝗋𝗋𝖾𝗇𝖼𝗂𝖾𝗌 : {country.currencies()}
+𝖱𝖾𝗌𝗂𝖽𝖾𝗇𝖼𝖾 : {country.demonym()}
+𝖳𝗂𝗆𝖾𝗓𝗈𝗇𝖾 : <code>{country.timezones()}</code>
 """
-
-    # Buttons
-    buttons=[
-        [InlineKeyboardButton("ᴡɪᴋɪᴘᴇᴅɪᴀ", url=wikipedia_url)],
-        [InlineKeyboardButton("ɢᴏᴏɢʟᴇ", url=f"https://www.google.com/search?q={country_name.replace(' ', '+')}")],
-        [InlineKeyboardButton("Map Location", url=map_url)],
-        [InlineKeyboardButton('ᴄʟᴏsᴇ', callback_data='close_data')]
-    ]
-
+    country_name = country.name()
+    country_name = country_name.replace(" ", "+")
+    buttons=[[
+      InlineKeyboardButton("ᴡɪᴋɪᴘᴇᴅɪᴀ", url=f"{country.wiki()}"),
+      InlineKeyboardButton("ɢᴏᴏɢʟᴇ", url=f"https://www.google.com/search?q={country_name}")
+    ],[
+       InlineKeyboardButton('ᴄʟᴏsᴇ', callback_data='close_data')
+    ]]
     try:
         await update.reply_photo(
-            photo=flag_url,
+            photo="https://telegra.ph/file/834750cfadc32b359b40c.jpg",
             caption=info,
             reply_markup=InlineKeyboardMarkup(buttons),
             quote=True
