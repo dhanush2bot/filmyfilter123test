@@ -15,4 +15,4 @@ pyromod
 #country Information
 countryinfo
 requests
-wikipedia-api
+wikipediaapi
