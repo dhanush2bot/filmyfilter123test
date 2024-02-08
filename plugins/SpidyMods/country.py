@@ -5,7 +5,7 @@ import requests
 import wikipediaapi
 
 # Create a Wikipedia API client for English Wikipedia
-wiki_api = wikipediaapi.Wikipedia('en')
+wiki_api = wikipediaapi.Wikipedia('en', user_agent='MyBot/1.0')
 
 @Client.on_message(filters.command(["country"]))
 async def country_info(bot, update):
