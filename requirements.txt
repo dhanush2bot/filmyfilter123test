@@ -14,5 +14,3 @@ pyromod
 
 #country Information
 countryinfo
-requests
-py-google
