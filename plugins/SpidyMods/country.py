@@ -2,10 +2,20 @@ from countryinfo import CountryInfo
 from pyrogram import filters, Client 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import requests
-import wikipediaapi
+from pygoogle import pygoogle
 
-# Create a Wikipedia API client for English Wikipedia
-wiki_api = wikipediaapi.Wikipedia('en', user_agent='MyBot/1.0')
+def get_country_info_from_google(country_name):
+    query = f"{country_name} wikipedia"
+    g = pygoogle(query)
+    g.pages = 1
+    search_results = g.get_urls()
+    if search_results:
+        # Assuming the first search result is the Wikipedia page
+        wikipedia_url = search_results[0]
+        # You can use this URL to fetch additional information if needed
+        return wikipedia_url
+    else:
+        return None
 
 @Client.on_message(filters.command(["country"]))
 async def country_info(bot, update):
@@ -13,8 +23,11 @@ async def country_info(bot, update):
     country_info = CountryInfo(country_name)
     
     # Use the Wikipedia API to fetch a summary of the country
-    wiki_page = wiki_api.page(country_name)
-    wiki_summary = wiki_page.summary[:1000]  # Limit the summary to 1000 characters
+    wikipedia_url = get_country_info_from_google(country_name)
+    if wikipedia_url:
+        wiki_summary = f"More information: {wikipedia_url}"
+    else:
+        wiki_summary = "Wikipedia information not found"
     
     # Additional information
     languages = country_info.languages()
@@ -47,7 +60,7 @@ Population : <code>{country_info.population()}</code>
 𝖳𝗈𝗉 𝖫𝖾𝗏𝖾𝗅 𝖣𝗈𝗆𝖺𝗂𝗇𝗌 : {country_info.tld()}
 𝖢𝖺𝗅𝗅𝗂𝗇𝗀 𝖢𝗈𝖽𝖾𝗌 : {country_info.calling_codes()}
 𝖢𝗎𝗋𝗋𝖾𝗇𝖼𝗂𝖾𝗌 : {country_info.currencies()}
-𝖱𝖾𝗌𝗂𝖽𝖾𝗇𝖼𝖾 : {country_info.demonym()}
+𝖱𝖾𝗌𝗂𝖉𝖾𝗇𝖼𝖾 : {country_info.demonym()}
 𝖳𝗂𝗆𝖾𝗓𝗈𝗇𝖾 : <code>{country_info.timezones()}</code>
 Official Language(s): {', '.join(languages)}
 Wikipedia Summary: {wiki_summary}
@@ -60,7 +73,7 @@ COVID-19 Statistics:
 
     # Buttons
     buttons=[
-        [InlineKeyboardButton("ᴡɪᴋɪᴘᴇᴅɪᴀ", url=wiki_page.fullurl)],
+        [InlineKeyboardButton("ᴡɪᴋɪᴘᴇᴅɪᴀ", url=wikipedia_url)],
         [InlineKeyboardButton("ɢᴏᴏɢʟᴇ", url=f"https://www.google.com/search?q={country_name.replace(' ', '+')}")],
         [InlineKeyboardButton("Map Location", url=map_url)],
         [InlineKeyboardButton('ᴄʟᴏsᴇ', callback_data='close_data')]
